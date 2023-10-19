@@ -19,6 +19,9 @@ jobs:
 
     - name: show files
       run: ls
+
+    - name: show files print
+      run: echo "$(ls -l)"
       
     - uses: actions/checkout@v3
     - name: Build the Docker image
