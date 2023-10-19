@@ -15,8 +15,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Clone Code
-      run: git clone https://github.com/liupengzhouyi/GrandetServer.git
+    - uses: actions/checkout@v3
+    # - name: Clone Code
+    #   run: git clone https://github.com/liupengzhouyi/GrandetServer.git
     
     - name: show path
       run: pwd
@@ -24,11 +25,11 @@ jobs:
     - name: show files
       run: ls
 
-    - name: show files print
-      run: echo "$(ls -l)"
-
     - name: input Project
       run: cd GrandetServer
+
+    - name: show files print
+      run: echo "$(ls -l)"
       
     - uses: actions/checkout@v3
     - name: Build the Docker image
