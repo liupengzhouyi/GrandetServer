@@ -10,8 +10,8 @@ COPY ./requirements.txt /usr/src/grandet/app/requirements.txt
 
 
 # 安装项目依赖
-RUN pip3 install -i https://mirrors.cloud.tencent.com/pypi/simple -U pip 
-RUN pip3 config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple
+# RUN pip3 install -i https://mirrors.cloud.tencent.com/pypi/simple -U pip 
+# RUN pip3 config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple
 RUN pip install --no-cache-dir -r requirements.txt 
 
 # 暴露你的应用程序端口
