@@ -8,8 +8,10 @@ from functools import cmp_to_key
 
 from settings import log_file_path
 from settings import bill_No1_line
+
 from models.transaction_date_time import TransactionDateTime
 from models.transaction import Transaction
+from models.years_transaction import YearsTransaction
 
 from tools.inject_style import InjectStyle
 from tools.transaction_tools import TransactionTools
@@ -48,12 +50,9 @@ class TransactionsTools:
 
         for item in transactions:
             
-            if isinstance(item, Transaction) or True:
-                # print(item.transaction_number)
+            if isinstance(item, Transaction):
                 # 获取交易的交易号并去除空格和制表符
-                # transaction_id = str(item.transaction_number).replace(" ", "").replace("\t", "")get_transaction_number
                 transaction_id = TransactionTools.get_transaction_number(transaction=item).replace(" ", "").replace("\t", "")
-                # print(f"transaction_id: {transaction_id}")
                 if transaction_id not in transaction_ids:
                     # 如果交易号不在已处理列表中，将该交易添加到新列表中
                     transaction_ids.append(transaction_id)
@@ -139,14 +138,19 @@ class TransactionsTools:
         
         log_info = f"Gentateion transcations by file {file_path}."
         logger.info(log_info)
+        
         transaction_infos = ReadTransactionTable.open_csv(csv_file_path=file_path, head=False, frist_line_word=bill_No1_line)
         log_info = f"transcations num: {str(len(transaction_infos))}."
         logger.info(log_info)
+        
         transactions = []
+        
         source = ReadTransactionTable.alipay_or_wechat(csv_file_path=file_path)
+        
         for row in transaction_infos:
-            temp = Transaction(time_=TransactionDateTime())
-            temp = TransactionTools().init_by_list(transaction=temp, infos=row)
+            # temp = Transaction(time_=TransactionDateTime())
+            # temp = TransactionTools().init_by_list(transaction=temp, infos=row)
+            temp = TransactionTools.create_transaction(infos=row)
             temp_transaction_with_source = InjectStyle.add_source(transaction=temp, source=source)
             transactions.append(temp_transaction_with_source)
         return transactions
@@ -163,14 +167,36 @@ class TransactionsTools:
             transactions = cls.init_transactions_by_file(file_path=bill_file)
             # 将获取的交易数据扩展到所有交易数据列表中
             all_transactions.extend(transactions)
-            all_transactions = all_transactions + transactions
-            logger.info(str(len(transactions)) + "--------" + str(len(all_transactions)))
         # 根据交易时间对所有交易数据进行排序
         all_transactions = cls.sort_transactions(transactions=all_transactions)
-        logger.info("--------" + str(len(all_transactions)))
         # 删除具有相同交易号的交易，并获取新的交易列表
         target_transactions = cls.delete_same_transaction(all_transactions)
-        logger.info("--------" + str(len(target_transactions)))
         log_info = f"All transcations num: {str(len(target_transactions))}."
         logger.info(log_info)
         return target_transactions
+    
+    
+    @classmethod
+    def genaration_year_transaction(cls, transactions: list) -> dict:
+        
+        years_transactions = {}
+        for transaction in transactions:
+            if isinstance(transaction, Transaction):
+                year_value = int(transaction.get_datetime().year)
+                if year_value not in years_transactions.keys():
+                    years_transactions[year_value] = YearsTransaction(year=year_value)
+                temp_year_transcation = years_transactions[year_value]
+                if isinstance(temp_year_transcation, YearsTransaction):
+                    temp_year_transcation.add_transaction(transaction=transaction)
+        return years_transactions
+    
+    
+    @classmethod
+    def years_transactions_to_json(cls, years_transactions: dict, simple: bool=True):
+        
+        info = {}
+        for year_transactions_key in years_transactions.keys():
+            year_transactions = years_transactions.get(year_transactions_key)
+            if isinstance(year_transactions, YearsTransaction):
+                info[year_transactions_key] = year_transactions.to_json(simple=simple)
+        return info

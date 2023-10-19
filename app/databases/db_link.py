@@ -2,16 +2,18 @@ from fastapi import Depends
 
 import mysql.connector
 from settings import MySQL_ip
+from settings import MySQL_port
 from settings import MySQL_user
 from settings import MySQL_password
+from settings import DB_name
 
 def get_db_connection():
     connection = mysql.connector.connect(
         host=MySQL_ip,
-        port=3306,
+        port=MySQL_port,
         user=MySQL_user,
         password=MySQL_password,
-        database="grandet"
+        database=DB_name
     )
     return connection
 
