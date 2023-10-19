@@ -26,6 +26,9 @@ jobs:
 
     - name: show files print
       run: echo "$(ls -l)"
+
+    - name: input Project
+      run: cd GrandetServer
       
     - uses: actions/checkout@v3
     - name: Build the Docker image
