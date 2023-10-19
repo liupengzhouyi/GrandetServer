@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+# from fastapi.middleware.cors import CORSMiddleware
 from mysql.connector import cursor
 from starlette.requests import Request
 import json
@@ -11,12 +12,22 @@ from settings import log_file_path
 
 router = APIRouter()
 
+# origins = [
+#     "http://localhost:8000"
+# ]
+# router.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 logging.basicConfig(filename=log_file_path, level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
-@router.get("/users/")
+@router.get("/users/", tags=["User"])
 async def get_users(db: cursor.MySQLCursor = Depends(get_db)):
     
     query = "SELECT * FROM users"
@@ -27,7 +38,7 @@ async def get_users(db: cursor.MySQLCursor = Depends(get_db)):
     else:
         return {"error": "User not found"}
     
-@router.get("/users/{user_id}")
+@router.get("/users/{user_id}", tags=["User"])
 async def get_user(user_id: int,
                    db: cursor.MySQLCursor = Depends(get_db)):
     query = "SELECT * FROM users WHERE id = %s"
@@ -40,7 +51,7 @@ async def get_user(user_id: int,
     else:
         return {"error": "User not found"}
     
-@router.get("/users/{user_id}")
+@router.get("/users/{user_id}", tags=["User"])
 async def get_user_by_name(user_name: str, db: cursor.MySQLCursor = Depends(get_db)) -> User:
     
     log_info = "Get user info by username:{}.".format(user_name)
@@ -60,7 +71,7 @@ async def get_user_by_name(user_name: str, db: cursor.MySQLCursor = Depends(get_
     return user
 
 
-@router.get("/user_name/{user_name}")
+@router.get("/user_name/{user_name}", tags=["User"])
 async def insert_user(request: Request,
                       user_name: str,
                       password_hash: str,
@@ -75,7 +86,8 @@ async def insert_user(request: Request,
     return UserTools.check_user_existed(user=user)
 
 
-@router.post("/login")
+# @router.post("/login", tags=["User"])
+@router.get("/login", tags=["User"])
 async def login(request: Request, user_name: str, password: str, db: cursor.MySQLCursor = Depends(get_db)):
     
     log_info = f"User name:{user_name}; Password:{password}."
@@ -104,7 +116,7 @@ async def login(request: Request, user_name: str, password: str, db: cursor.MySQ
     return login_result
 
 
-@router.post("/register")
+@router.post("/register", tags=["User"])
 async def register(request: Request,
                    username: str,
                    password: str,
@@ -145,7 +157,7 @@ async def register(request: Request,
     return register_reason
 
 
-@router.delete("/delete-user")
+@router.delete("/delete-user", tags=["User"])
 def delete_user(username: str, password: str):
     
     return {"message": "User deleted successfully"}

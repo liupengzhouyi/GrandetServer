@@ -2,6 +2,8 @@
 
 import os
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi.responses import JSONResponse
+
 from pathlib import Path
 from starlette.requests import Request
 import logging
@@ -33,7 +35,7 @@ def create_user_directory(upload_folder: str, user_name: str):
     return user_directory  # 返回用户目录的路径，以便后续使用
 
 
-@router.post("/get_upload_folder/")
+@router.post("/get_upload_folder/", tags=["file_operation"])
 def get_user_folder_path(request: Request):
     """
     获取当前登录用户的文件夹路径。
@@ -50,8 +52,10 @@ def get_user_folder_path(request: Request):
     }
 
     # 从 session 获取用户信息
-    user_name = request.session.get("user_name")
-    login_status = request.session.get("login_status")
+    # user_name = request.session.get("user_name")
+    # login_status = request.session.get("login_status")
+    user_name = request.cookies.get("user_name")
+    login_status = request.cookies.get("login_status")
 
     # 检查用户是否登录
     if not login_status:
@@ -77,14 +81,17 @@ def get_user_folder_path(request: Request):
     return result
 
 
-@router.post("/uploadfile/")
-async def upload_file(request: Request, file: UploadFile = File(...)):
+@router.post("/uploadfile/", tags=["file_operation"])
+async def upload_file(request: Request, file: UploadFile = File(...), user_name: str="", login_status: bool=False):
     
     log_info = f"Begin upload file."
     logger.info(log_info)
     upload_file_result = {"upload_file_status": False, "message": "File uploaded failed!", "file_name": ""}
-    user_name = request.session.get("user_name")
-    login_status = request.session.get("login_status")
+    # user_name = request.session.get("user_name")
+    # login_status = request.session.get("login_status")
+    
+    user_name = request.cookies.get("user_name")
+    login_status = request.cookies.get("login_status")
     
     if not login_status:
         log_info = "User not longin, Please login."
@@ -114,8 +121,8 @@ async def upload_file(request: Request, file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"File upload failed!")
 
 
-@router.post("/get_user_all_files/")
-def get_all_user_files(request: Request) -> dict:
+@router.post("/get_user_all_files/", tags=["file_operation"])
+def get_all_user_files(request: Request, user_name: str="", login_status: bool=False) -> dict:
     """
     获取指定用户文件夹下的所有文件。
 
@@ -132,8 +139,10 @@ def get_all_user_files(request: Request) -> dict:
     }
 
     # 从 session 获取用户信息
-    user_name = request.session.get("user_name")
-    login_status = request.session.get("login_status")
+    # user_name = request.session.get("user_name")
+    # login_status = request.session.get("login_status")
+    # user_name = request.cookies.get("user_name")
+    # login_status = request.cookies.get("login_status")
 
     # 检查用户是否登录
     if not login_status:
@@ -162,8 +171,23 @@ def get_all_user_files(request: Request) -> dict:
     return result
 
 
-@router.post("/get_user_all_bills_files/")
-def get_user_all_bills_files(request: Request) -> dict:
+@router.post("/get_user_all_bills_files/", tags=["file_operation"])
+def get_user_all_bills_files(request: Request, user_name: str="", login_status: bool=False, simple: bool=True) -> dict:
+    
+    """
+    获取指定用户文件夹下的所有账单文件。
+
+    :param request: FastAPI 的请求对象，用于获取 session 数据。
+    :return: 包含 status, reason 和 file_paths 的字典。
+    """
+    
+    result = get_user_all_bills_files_core(request=request, user_name=user_name, login_status=login_status, simple=simple)
+    return JSONResponse(content=result, media_type="application/json; charset=utf-8")
+    
+    
+
+@router.post("/get_user_all_bills_files_core/", tags=["file_operation"])
+def get_user_all_bills_files_core(request: Request, user_name: str="", login_status: bool=False, simple: bool=True) -> dict:
     
     """
     获取指定用户文件夹下的所有账单文件。
@@ -178,10 +202,12 @@ def get_user_all_bills_files(request: Request) -> dict:
         "reason": "",
         "file_paths": []
     }
-
+    
     # 从 session 获取用户信息
-    user_name = request.session.get("user_name")
-    login_status = request.session.get("login_status")
+    # user_name = request.session.get("user_name")
+    # login_status = request.session.get("login_status")
+    # user_name = request.cookies.get("user_name")
+    # login_status = request.cookies.get("login_status")
 
     # 检查用户是否登录
     if not login_status:
@@ -205,8 +231,10 @@ def get_user_all_bills_files(request: Request) -> dict:
     # 更新返回结果
     result["status"] = True
     result["reason"] = "Success"
-    result["file_paths"] = [str(f) for f in target_csv_files]
+    if simple:
+        result["file_paths"] = [os.path.basename(str(f)) for f in target_csv_files]
+    else:
+        result["file_paths"] = [str(f) for f in target_csv_files]
+    # print(result["file_paths"])
     logger.info(f"Successfully retrieved files for user {user_name}.")
-    
     return result
-    

@@ -19,6 +19,14 @@ logger = logging.getLogger(__name__)
 class TransactionTools:
     
     @classmethod
+    def create_transaction(cls, infos: list) -> Transaction:
+    
+        transaction = Transaction()
+        transaction.init_by_list(infos)
+        return transaction
+
+
+    @classmethod
     def init_by_list(cls, transaction: Transaction, infos: list) -> Transaction:
         
         # print(f"Infos length: {str(len(infos))}")
