@@ -25,17 +25,17 @@ jobs:
     - name: show files
       run: ls
 
-    - name: input Project
-      run: cd GrandetServer
+    # - name: input Project
+    #   run: cd GrandetServer
 
     - name: show files print
       run: echo "$(ls -l)"
       
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build -t grandet_server .
+    # - uses: actions/checkout@v3
+    # - name: Build the Docker image
+    #   run: docker build -t grandet_server .
       
-    - uses: actions/checkout@v3
+    # - uses: actions/checkout@v3
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag grandet_server:$(date +%s)
 
