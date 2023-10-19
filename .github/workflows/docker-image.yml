@@ -2,9 +2,11 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: 
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches: 
+      - main
 
 jobs:
 
@@ -13,7 +15,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
+    - name: Clone Code
+      run: git clone https://github.com/liupengzhouyi/GrandetServer.git
+    
     - name: show path
       run: pwd
 
