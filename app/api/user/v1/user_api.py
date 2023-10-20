@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
-# from fastapi.middleware.cors import CORSMiddleware
+
+from fastapi.responses import JSONResponse
+
 from mysql.connector import cursor
 from starlette.requests import Request
 import json
@@ -12,16 +14,6 @@ from settings import log_file_path
 
 router = APIRouter()
 
-# origins = [
-#     "http://localhost:8000"
-# ]
-# router.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=origins,
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
 
 logging.basicConfig(filename=log_file_path, level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -113,7 +105,9 @@ async def login(request: Request, user_name: str, password: str, db: cursor.MySQ
     logger.info(log_info)
     
     login_result = {"user": user_name, "login_status": request.session.get("login_status")}
-    return login_result
+    
+    headers = {"Access-Control-Allow-Origin": "*"}
+    return JSONResponse(content=login_result, headers=headers)
 
 
 @router.post("/register", tags=["User"])

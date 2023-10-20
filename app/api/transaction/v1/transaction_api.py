@@ -3,6 +3,7 @@
 
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from starlette.requests import Request
 import json
 import logging
@@ -63,7 +64,6 @@ async def get_all_transaction(request: Request, user: str="", login_status: bool
     
     result["transactions"] = simpor_info
     
-    
     # Step 3: Return the result
-    return result
-
+    headers = {"Access-Control-Allow-Origin": "*"}
+    return JSONResponse(content=result, headers=headers)
